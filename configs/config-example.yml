@@ -1,0 +1,8 @@
+server:
+  port: ":8080"
+database:
+  user: "postgres",
+  password: "postgres",
+email:
+  email: "email@example.com",
+  password: "password"

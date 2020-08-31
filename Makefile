@@ -1,0 +1,1 @@
+build: go build -v ./cmd/trelloserver
