@@ -1,25 +1,16 @@
 package main
 
 import (
-	"fmt"
-	"github.com/gorilla/mux/internal/app/trelloserver"
-	"gopkg.in/yaml.v2"
+	"github.com/trello-analog/backend/server"
 	"log"
-	"os"
 )
 
 func main() {
-	cfg := trelloserver.NewConfig()
+	app := server.NewApp()
 
-	f, err := os.Open("configs/config.yml")
+	err := app.Run()
+
 	if err != nil {
 		log.Fatal(err)
 	}
-	defer f.Close()
-
-	decoder := yaml.NewDecoder(f)
-	err = decoder.Decode(&cfg)
-
-	fmt.Println(cfg)
-
 }
