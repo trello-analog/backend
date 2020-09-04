@@ -19,6 +19,7 @@ type User struct {
 	Password string `json:"password"`
 	TwoAuth  bool   `json:"twoAuth"`
 	Avatar   string `json:"avatar"`
+	Code     string `json:"code"`
 }
 
 func (u *User) Validate() error {

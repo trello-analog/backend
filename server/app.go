@@ -1,7 +1,6 @@
 package server
 
 import (
-	"encoding/json"
 	"github.com/gorilla/handlers"
 	"github.com/gorilla/mux"
 	authhttp "github.com/trello-analog/backend/auth/delivery/http"
@@ -38,10 +37,6 @@ func (app *App) Run() error {
 	headers := handlers.AllowedHeaders([]string{"X-Requested-With", "Content-Type", "access-token", "refresh-token"})
 	methods := handlers.AllowedMethods([]string{"GET", "POST", "PUT", "DELETE"})
 	origin := handlers.AllowedOrigins([]string{"http://localhost:3000"})
-
-	app.router.HandleFunc("/test", func(writer http.ResponseWriter, request *http.Request) {
-		json.NewEncoder(writer).Encode("11111")
-	}).Methods(http.MethodGet)
 
 	authhttp.AuthEndpoints(app.router, app.authUseCase)
 
