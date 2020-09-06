@@ -42,7 +42,15 @@ func (u *User) Validate() error {
 	)
 }
 
-func (u *User) CryptPassword() {
+func (u *User) CryptPassword() *User {
 	ps := services.PasswordService{}
 	u.Password = ps.GetCryptPassword(u.Password)
+
+	return u
+}
+
+func (u *User) SetCode(code string) *User {
+	u.Code = code
+
+	return u
 }

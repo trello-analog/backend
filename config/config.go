@@ -6,6 +6,10 @@ import (
 	"os"
 )
 
+type ClientConfig struct {
+	Host string `yaml:"host"`
+}
+
 type ServerConfig struct {
 	Port string `yaml:"port"`
 }
@@ -27,6 +31,7 @@ type Config struct {
 	Server             ServerConfig   `yaml:"server"`
 	Database           DatabaseConfig `yaml:"database"`
 	Email              EmailConfig    `yaml:"email"`
+	Client             ClientConfig   `yaml:"client"`
 	PasswordSecret     string         `yaml:"passwordSecret"`
 	AccessTokenSecret  string         `yaml:"accessTokenSecret"`
 	RefreshTokenSecret string         `yaml:"refreshTokenSecret"`

@@ -25,4 +25,5 @@ var (
 	InvalidEmail           = NewAPIError(http.StatusBadRequest, 4, "Невалидный email!")
 	InvalidPassword        = NewAPIError(http.StatusBadRequest, 5, "Невалидный пароль!")
 	UserNotFound           = NewAPIError(http.StatusNotFound, 6, "Пользователь не найден!")
+	SignUpEmailError       = NewAPIError(http.StatusBadRequest, 7, "Ошибка почтового сервера!")
 )

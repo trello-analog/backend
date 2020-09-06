@@ -9,7 +9,7 @@ require (
 	github.com/gorilla/handlers v1.5.0
 	github.com/gorilla/mux v1.8.0
 	github.com/jackc/pgproto3/v2 v2.0.4 // indirect
-	github.com/rs/cors v1.7.0
+	github.com/nu7hatch/gouuid v0.0.0-20131221200532-179d4d0c4d8d
 	github.com/sirupsen/logrus v1.6.0 // indirect
 	golang.org/x/crypto v0.0.0-20200820211705-5c72a883971a
 	golang.org/x/xerrors v0.0.0-20200804184101-5ec99f83aff1 // indirect
