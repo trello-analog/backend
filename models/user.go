@@ -17,9 +17,8 @@ type User struct {
 	Email    string `json:"email"`
 	Login    string `json:"login"`
 	Password string `json:"password"`
-	TwoAuth  bool   `json:"twoAuth"`
+	TwoAuth  bool   `json:"two_auth"`
 	Avatar   string `json:"avatar"`
-	Code     string `json:"code"`
 }
 
 func (u *User) Validate() error {
@@ -45,12 +44,6 @@ func (u *User) Validate() error {
 func (u *User) CryptPassword() *User {
 	ps := services.PasswordService{}
 	u.Password = ps.GetCryptPassword(u.Password)
-
-	return u
-}
-
-func (u *User) SetCode(code string) *User {
-	u.Code = code
 
 	return u
 }

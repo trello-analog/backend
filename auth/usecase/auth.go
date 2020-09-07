@@ -1,6 +1,7 @@
 package usecase
 
 import (
+	"fmt"
 	uuid "github.com/nu7hatch/gouuid"
 	"github.com/trello-analog/backend/auth"
 	"github.com/trello-analog/backend/config"
@@ -37,11 +38,13 @@ func (auc *AuthUseCase) SignUp(user *model.User) (*entity.IdResponse, *customerr
 		return nil, customerrors.NewAPIError(http.StatusBadRequest, 8, user.Validate().Error())
 	}
 	code, _ := uuid.NewV4()
-	user.
-		CryptPassword().
-		SetCode(code.String())
+	user.CryptPassword()
 
 	result, err := auc.repository.CreateUser(user)
+
+	c := model.NewConfirmationCode(result.ID)
+
+	fmt.Println(c)
 
 	sendError := sender.SendEmailAfterSignUp(&emails.SignUpEmail{
 		Email: user.Email,

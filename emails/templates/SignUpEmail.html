@@ -27,7 +27,7 @@
             Привет, <span class="name">{{.Name}}</span>
         </h1>
         <div>
-            Для завершения регистрации пройдите по <a href="{{.Host}}/registration/{{.Code}}" target="_blank">ссылке</a>
+            Для завершения регистрации пройдите по <a href="{{.Host}}/confirm?code={{.Code}}&email={{.Email}}" target="_blank">ссылке</a>
         </div>
     </div>
 </body>

@@ -1,8 +1,9 @@
 package main
 
 import (
-	"github.com/trello-analog/backend/server"
 	"log"
+
+	"github.com/trello-analog/backend/server"
 )
 
 func main() {

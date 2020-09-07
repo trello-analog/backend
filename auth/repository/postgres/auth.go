@@ -38,8 +38,8 @@ func (a *AuthRepository) GetUserById(id int) (*model.User, *customerrors.APIErro
 		return nil, customerrors.NewAPIError(http.StatusNotFound, 10, result.Error.Error())
 	}
 
-	if user == (&model.User{}) {
-		return nil, customerrors.UserNotFound
+	if user.ID == 0 {
+		return nil, customerrors.NotFound
 	}
 
 	return user, nil
@@ -53,9 +53,49 @@ func (a *AuthRepository) GetUserByField(field string, value interface{}) (*model
 		return nil, customerrors.NewAPIError(http.StatusNotFound, 10, result.Error.Error())
 	}
 
-	if user == (&model.User{}) {
-		return nil, customerrors.UserNotFound
+	if user.ID == 0 {
+		return nil, customerrors.NotFound
 	}
 
 	return user, nil
+}
+
+func (a *AuthRepository) CreateConfirmationCode(code *model.ConfirmationCode) *customerrors.APIError {
+	result := a.db.Table("confirmation_codes").Create(&code)
+
+	if result.Error != nil {
+		return customerrors.NewAPIError(http.StatusBadRequest, 10, result.Error.Error())
+	}
+
+	return nil
+}
+
+func (a *AuthRepository) GetConfirmationCodeByField(field string, value interface{}) (*model.ConfirmationCode, *customerrors.APIError) {
+	code := &model.ConfirmationCode{}
+	result := a.db.Table("confirmation_codes").Where(field+" = ?", value).Find(&code)
+
+	if result.Error != nil {
+		return nil, customerrors.NewAPIError(http.StatusNotFound, 10, result.Error.Error())
+	}
+
+	if code.ID == 0 {
+		return nil, customerrors.NotFound
+	}
+
+	return code, nil
+}
+
+func (a *AuthRepository) DeleteConfirmationCode(id int) *customerrors.APIError {
+	code := &model.ConfirmationCode{}
+	result := a.db.Table("users").First(&code, id)
+
+	if result.Error != nil {
+		return customerrors.NewAPIError(http.StatusNotFound, 10, result.Error.Error())
+	}
+
+	if code.ID == 0 {
+		return customerrors.NotFound
+	}
+
+	return nil
 }

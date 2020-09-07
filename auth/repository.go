@@ -10,4 +10,7 @@ type AuthRepository interface {
 	CreateUser(user *model.User) (*entity.IdResponse, *customerrors.APIError)
 	GetUserById(id int) (*model.User, *customerrors.APIError)
 	GetUserByField(field string, value interface{}) (*model.User, *customerrors.APIError)
+	CreateConfirmationCode(code *model.ConfirmationCode) *customerrors.APIError
+	GetConfirmationCodeByField(field string, value interface{}) (*model.ConfirmationCode, *customerrors.APIError)
+	DeleteConfirmationCode(id int) *customerrors.APIError
 }
