@@ -11,7 +11,6 @@ func AuthEndpoints(router *mux.Router, useCase auth.UseCase) {
 
 	router.HandleFunc("/sign-up", handler.SignUp()).Methods(http.MethodPost)
 	router.
-		HandleFunc("/confirm", handler.SignUp()).
-		Queries("code", "{code}", "email", "{email}").
+		HandleFunc("/confirm", handler.ConfirmUser()).
 		Methods(http.MethodPost)
 }

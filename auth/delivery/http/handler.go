@@ -40,17 +40,17 @@ func (ah *AuthHandler) SignUp() http.HandlerFunc {
 
 func (ah *AuthHandler) ConfirmUser() http.HandlerFunc {
 	return func(writer http.ResponseWriter, request *http.Request) {
-		code := request.FormValue("code")
-		email := request.FormValue("email")
+		data := &entity.ConfirmationUserRequest{}
 
-		err := ah.useCase.ConfirmUser(&entity.ConfirmationUserRequest{
-			Code:  code,
-			Email: email,
-		})
-
+		err := json.NewDecoder(request.Body).Decode(&data)
 		if err != nil {
+			json.NewEncoder(writer).Encode("error")
+		}
+		confirmError := ah.useCase.ConfirmUser(data)
+
+		if confirmError != nil {
 			writer.WriteHeader(http.StatusBadRequest)
-			json.NewEncoder(writer).Encode(entity.NewErrorResponse(err))
+			json.NewEncoder(writer).Encode(entity.NewErrorResponse(confirmError))
 			return
 		}
 

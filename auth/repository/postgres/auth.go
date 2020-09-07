@@ -75,7 +75,7 @@ func (a *AuthRepository) GetConfirmationCodeByField(field string, value interfac
 
 func (a *AuthRepository) DeleteConfirmationCode(id int) *customerrors.APIError {
 	code := &model.ConfirmationCode{}
-	result := a.db.Table("users").First(&code, id)
+	result := a.db.Table("confirmation_codes").First(&code, id)
 
 	if result.Error != nil {
 		return customerrors.NewAPIError(http.StatusNotFound, 10, result.Error.Error())

@@ -1,7 +1,6 @@
 package usecase
 
 import (
-	uuid "github.com/nu7hatch/gouuid"
 	"github.com/trello-analog/backend/auth"
 	"github.com/trello-analog/backend/config"
 	"github.com/trello-analog/backend/customerrors"
@@ -36,7 +35,6 @@ func (auc *AuthUseCase) SignUp(user *model.User) (*entity.IdResponse, *customerr
 	if user.Validate() != nil {
 		return nil, customerrors.NewAPIError(http.StatusBadRequest, 8, user.Validate().Error())
 	}
-	code, _ := uuid.NewV4()
 	user.CryptPassword()
 
 	result, err := auc.repository.CreateUser(user)
@@ -53,7 +51,7 @@ func (auc *AuthUseCase) SignUp(user *model.User) (*entity.IdResponse, *customerr
 		Email: user.Email,
 		Name:  user.Login,
 		Host:  cfg.Client.Host,
-		Code:  code.String(),
+		Code:  confirmationCode.Code,
 	})
 	if sendError != nil {
 		return nil, customerrors.SignUpEmailError
