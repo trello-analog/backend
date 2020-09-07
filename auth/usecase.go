@@ -8,4 +8,5 @@ import (
 
 type UseCase interface {
 	SignUp(user *model.User) (*entity.IdResponse, *customerrors.APIError)
+	ConfirmUser(data *entity.ConfirmationUserRequest) *customerrors.APIError
 }

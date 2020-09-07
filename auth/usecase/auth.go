@@ -1,7 +1,6 @@
 package usecase
 
 import (
-	"fmt"
 	uuid "github.com/nu7hatch/gouuid"
 	"github.com/trello-analog/backend/auth"
 	"github.com/trello-analog/backend/config"
@@ -42,9 +41,13 @@ func (auc *AuthUseCase) SignUp(user *model.User) (*entity.IdResponse, *customerr
 
 	result, err := auc.repository.CreateUser(user)
 
-	c := model.NewConfirmationCode(result.ID)
+	confirmationCode := model.NewConfirmationCode(result.ID)
 
-	fmt.Println(c)
+	codeErr := auc.repository.CreateConfirmationCode(confirmationCode)
+
+	if codeErr != nil {
+		return nil, codeErr
+	}
 
 	sendError := sender.SendEmailAfterSignUp(&emails.SignUpEmail{
 		Email: user.Email,
@@ -62,4 +65,28 @@ func (auc *AuthUseCase) SignUp(user *model.User) (*entity.IdResponse, *customerr
 
 	return result, nil
 
+}
+
+func (auc *AuthUseCase) ConfirmUser(data *entity.ConfirmationUserRequest) *customerrors.APIError {
+	code, err := auc.repository.GetConfirmationCodeByField("code", data.Code)
+
+	if code.ID == 0 {
+		return customerrors.NotFound
+	}
+
+	if code.IsCodeExpired() {
+		return customerrors.CodeExpired
+	}
+
+	if err != nil {
+		return err
+	}
+
+	deleteError := auc.repository.DeleteConfirmationCode(code.ID)
+
+	if deleteError != nil {
+		return deleteError
+	}
+
+	return nil
 }

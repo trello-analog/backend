@@ -38,10 +38,6 @@ func (a *AuthRepository) GetUserById(id int) (*model.User, *customerrors.APIErro
 		return nil, customerrors.NewAPIError(http.StatusNotFound, 10, result.Error.Error())
 	}
 
-	if user.ID == 0 {
-		return nil, customerrors.NotFound
-	}
-
 	return user, nil
 }
 
@@ -51,10 +47,6 @@ func (a *AuthRepository) GetUserByField(field string, value interface{}) (*model
 
 	if result.Error != nil {
 		return nil, customerrors.NewAPIError(http.StatusNotFound, 10, result.Error.Error())
-	}
-
-	if user.ID == 0 {
-		return nil, customerrors.NotFound
 	}
 
 	return user, nil
@@ -78,10 +70,6 @@ func (a *AuthRepository) GetConfirmationCodeByField(field string, value interfac
 		return nil, customerrors.NewAPIError(http.StatusNotFound, 10, result.Error.Error())
 	}
 
-	if code.ID == 0 {
-		return nil, customerrors.NotFound
-	}
-
 	return code, nil
 }
 
@@ -91,10 +79,6 @@ func (a *AuthRepository) DeleteConfirmationCode(id int) *customerrors.APIError {
 
 	if result.Error != nil {
 		return customerrors.NewAPIError(http.StatusNotFound, 10, result.Error.Error())
-	}
-
-	if code.ID == 0 {
-		return customerrors.NotFound
 	}
 
 	return nil

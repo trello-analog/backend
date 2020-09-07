@@ -26,4 +26,5 @@ var (
 	InvalidPassword        = NewAPIError(http.StatusBadRequest, 5, "Невалидный пароль!")
 	NotFound               = NewAPIError(http.StatusNotFound, 6, "Не найдено!")
 	SignUpEmailError       = NewAPIError(http.StatusBadRequest, 7, "Ошибка почтового сервера!")
+	CodeExpired            = NewAPIError(http.StatusBadRequest, 8, "Время жизни этого кода подтверждения истёк!")
 )

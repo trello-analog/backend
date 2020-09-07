@@ -9,5 +9,9 @@ import (
 func AuthEndpoints(router *mux.Router, useCase auth.UseCase) {
 	handler := NewAuthHandler(useCase)
 
-	router.HandleFunc("/auth/sign-up", handler.SignUp()).Methods(http.MethodPost)
+	router.HandleFunc("/sign-up", handler.SignUp()).Methods(http.MethodPost)
+	router.
+		HandleFunc("/confirm", handler.SignUp()).
+		Queries("code", "{code}", "email", "{email}").
+		Methods(http.MethodPost)
 }

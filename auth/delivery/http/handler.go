@@ -20,8 +20,6 @@ func NewAuthHandler(useCase auth.UseCase) *AuthHandler {
 
 func (ah *AuthHandler) SignUp() http.HandlerFunc {
 	return func(writer http.ResponseWriter, request *http.Request) {
-		writer.Header().Set("Content-Type", "application/json")
-
 		user := &model.User{}
 		err := json.NewDecoder(request.Body).Decode(&user)
 		if err != nil {
@@ -37,5 +35,25 @@ func (ah *AuthHandler) SignUp() http.HandlerFunc {
 		}
 
 		json.NewEncoder(writer).Encode(entity.NewSuccessResponse(result))
+	}
+}
+
+func (ah *AuthHandler) ConfirmUser() http.HandlerFunc {
+	return func(writer http.ResponseWriter, request *http.Request) {
+		code := request.FormValue("code")
+		email := request.FormValue("email")
+
+		err := ah.useCase.ConfirmUser(&entity.ConfirmationUserRequest{
+			Code:  code,
+			Email: email,
+		})
+
+		if err != nil {
+			writer.WriteHeader(http.StatusBadRequest)
+			json.NewEncoder(writer).Encode(entity.NewErrorResponse(err))
+			return
+		}
+
+		json.NewEncoder(writer).Encode(entity.NewSuccessResponse(struct{}{}))
 	}
 }

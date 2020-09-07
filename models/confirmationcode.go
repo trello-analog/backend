@@ -23,5 +23,12 @@ func NewConfirmationCode(userId int) *ConfirmationCode {
 }
 
 func (ccs *ConfirmationCode) IsCodeExpired() bool {
-	return false
+	now := time.Now().Unix()
+	codeExpire, err := time.Parse(time.Now().UTC().String(), ccs.Expired)
+
+	if err != nil {
+		return false
+	}
+
+	return now > codeExpire.Unix()
 }
