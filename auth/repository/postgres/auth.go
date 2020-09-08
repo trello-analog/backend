@@ -18,8 +18,20 @@ func NewAuthRepository(db *gorm.DB) *AuthRepository {
 	}
 }
 
+func (a *AuthRepository) UserTable() *gorm.DB {
+	return a.db.Table("users")
+}
+
+func (a *AuthRepository) ConfirmationCodeTable() *gorm.DB {
+	return a.db.Table("confirmation_codes")
+}
+
+func (a *AuthRepository) ForgotPasswordTable() *gorm.DB {
+	return a.db.Table("forgot_password")
+}
+
 func (a *AuthRepository) CreateUser(user *model.User) (*entity.IdResponse, *customerrors.APIError) {
-	u := a.db.Table("users").Create(&user)
+	u := a.UserTable().Create(&user)
 
 	if u.Error != nil {
 		return nil, customerrors.NewAPIError(http.StatusBadRequest, 10, u.Error.Error())
@@ -32,7 +44,7 @@ func (a *AuthRepository) CreateUser(user *model.User) (*entity.IdResponse, *cust
 
 func (a *AuthRepository) GetUserById(id int) (*model.User, *customerrors.APIError) {
 	user := &model.User{}
-	result := a.db.Table("users").First(&user, id)
+	result := a.UserTable().First(&user, id)
 
 	if result.Error != nil {
 		return nil, customerrors.NewAPIError(http.StatusNotFound, 10, result.Error.Error())
@@ -43,7 +55,7 @@ func (a *AuthRepository) GetUserById(id int) (*model.User, *customerrors.APIErro
 
 func (a *AuthRepository) GetUserByField(field string, value interface{}) (*model.User, *customerrors.APIError) {
 	user := &model.User{}
-	result := a.db.Table("users").Where(field+" = ?", value).Find(&user)
+	result := a.UserTable().Where(field+" = ?", value).Find(&user)
 
 	if result.Error != nil {
 		return nil, customerrors.NewAPIError(http.StatusNotFound, 10, result.Error.Error())
@@ -53,7 +65,7 @@ func (a *AuthRepository) GetUserByField(field string, value interface{}) (*model
 }
 
 func (a *AuthRepository) CreateConfirmationCode(code *model.ConfirmationCode) *customerrors.APIError {
-	result := a.db.Table("confirmation_codes").Create(&code)
+	result := a.ConfirmationCodeTable().Create(&code)
 
 	if result.Error != nil {
 		return customerrors.NewAPIError(http.StatusBadRequest, 10, result.Error.Error())
@@ -64,7 +76,7 @@ func (a *AuthRepository) CreateConfirmationCode(code *model.ConfirmationCode) *c
 
 func (a *AuthRepository) GetConfirmationCodeByField(field string, value interface{}) (*model.ConfirmationCode, *customerrors.APIError) {
 	code := &model.ConfirmationCode{}
-	result := a.db.Table("confirmation_codes").Where(field+" = ?", value).Find(&code)
+	result := a.ConfirmationCodeTable().Where(field+" = ?", value).Find(&code)
 
 	if result.Error != nil {
 		return nil, customerrors.NewAPIError(http.StatusNotFound, 10, result.Error.Error())
@@ -75,7 +87,7 @@ func (a *AuthRepository) GetConfirmationCodeByField(field string, value interfac
 
 func (a *AuthRepository) DeleteConfirmationCode(id int) *customerrors.APIError {
 	code := &model.ConfirmationCode{}
-	result := a.db.Table("confirmation_codes").Delete(&code, id)
+	result := a.ConfirmationCodeTable().Delete(&code, id)
 
 	if result.Error != nil {
 		return customerrors.NewAPIError(http.StatusNotFound, 10, result.Error.Error())
@@ -102,7 +114,7 @@ func (a *AuthRepository) UpdateConfirmationCode(code *model.ConfirmationCode) *c
 
 func (a *AuthRepository) GetConfirmationCodesByField(field string, value interface{}) ([]model.ConfirmationCode, *customerrors.APIError) {
 	codes := []model.ConfirmationCode{}
-	result := a.db.Table("confirmation_codes").Where(field+" = ?", value).Find(&codes)
+	result := a.ConfirmationCodeTable().Where(field+" = ?", value).Find(&codes)
 
 	if result.Error != nil {
 		return nil, customerrors.NewAPIError(http.StatusNotFound, 10, result.Error.Error())
@@ -113,7 +125,7 @@ func (a *AuthRepository) GetConfirmationCodesByField(field string, value interfa
 
 func (a *AuthRepository) GetLastConfirmationCodeByField(field string, value interface{}) (*model.ConfirmationCode, *customerrors.APIError) {
 	code := &model.ConfirmationCode{}
-	result := a.db.Table("confirmation_codes").Where(field+" = ?", value).Last(&code)
+	result := a.ConfirmationCodeTable().Where(field+" = ?", value).Last(&code)
 
 	if result.Error != nil {
 		return nil, customerrors.NewAPIError(http.StatusNotFound, 10, result.Error.Error())

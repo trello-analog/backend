@@ -55,7 +55,7 @@ func (auc *AuthUseCase) SignUp(user *model.User) (*entity.IdResponse, *customerr
 		Code:  confirmationCode.Code,
 	})
 	if sendError != nil {
-		return nil, customerrors.SignUpEmailError
+		return nil, customerrors.PostServerError
 	}
 
 	if err != nil {
@@ -146,7 +146,27 @@ func (auc *AuthUseCase) ResendConfirmationCode(email string) *customerrors.APIEr
 		Code:  newCode.Code,
 	})
 	if sendError != nil {
-		return customerrors.SignUpEmailError
+		return customerrors.PostServerError
+	}
+
+	return nil
+}
+
+func (auc *AuthUseCase) ForgotPassword(email string) *customerrors.APIError {
+	user, err := auc.repository.GetUserByField("email", email)
+
+	if err != nil {
+		return err
+	}
+
+	if user.ID == 0 {
+		return customerrors.EmailNotExists
+	}
+
+	sendError := auc.sender.SendForgotPasswordEmail(&emails.SignUpEmail{})
+
+	if sendError != nil {
+		return customerrors.PostServerError
 	}
 
 	return nil

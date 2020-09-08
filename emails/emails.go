@@ -33,3 +33,23 @@ func (es *EmailSender) SendEmailAfterSignUp(data *SignUpEmail) error {
 
 	return nil
 }
+
+func (es *EmailSender) SendForgotPasswordEmail(data *SignUpEmail) error {
+	parseError := es.EmailService.ParseTemplate("emails/templates/ForgotPasswordEmail.html", data)
+	subjectText := "Восстановление пароля"
+
+	if parseError != nil {
+		return parseError
+	}
+
+	sendEmail := es.EmailService.
+		SetEmail(data.Email).
+		SetSubject(subjectText).
+		SendEmail()
+
+	if sendEmail != nil {
+		return sendEmail
+	}
+
+	return nil
+}

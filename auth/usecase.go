@@ -10,4 +10,5 @@ type UseCase interface {
 	SignUp(user *model.User) (*entity.IdResponse, *customerrors.APIError)
 	ConfirmUser(data *entity.ConfirmationUserRequest) (*ConfirmUserResponse, *customerrors.APIError)
 	ResendConfirmationCode(email string) *customerrors.APIError
+	ForgotPassword(email string) *customerrors.APIError
 }
