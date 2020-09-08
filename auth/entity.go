@@ -6,17 +6,26 @@ type SignInRequest struct {
 }
 
 type RestorePasswordRequest struct {
-	Code                  string
-	NewPassword           string
-	RepeatPasswordRequest string
+	Code                  string `json:"code"`
+	NewPassword           string `json:"new_password"`
+	RepeatPasswordRequest string `json:"repeat_password_request"`
 }
 
 type TwoAuthCodeRequest struct {
-	CheckCode string
-	Code      string
+	CheckCode string `json:"check_code"`
+	Code      string `json:"code"`
 }
 
 type TwoAuthCodeResponse struct {
-	CheckCode string
-	Expired   string
+	CheckCode string `json:"check_code"`
+	Expired   string `json:"expired"`
+}
+
+type ConfirmUserResponse struct {
+	Status  string `json:"status"`
+	Message string `json:"message"`
+}
+
+type ResendConfirmationCodeRequest struct {
+	Email string `json:"email"`
 }

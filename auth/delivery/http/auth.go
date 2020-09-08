@@ -13,4 +13,5 @@ func AuthEndpoints(router *mux.Router, useCase auth.UseCase) {
 	router.
 		HandleFunc("/confirm", handler.ConfirmUser()).
 		Methods(http.MethodPost)
+	router.HandleFunc("/resend-confirm", handler.ResendConfirmationCode()).Methods(http.MethodPost)
 }

@@ -7,6 +7,7 @@ import (
 	postgres2 "github.com/trello-analog/backend/auth/repository/postgres"
 	"github.com/trello-analog/backend/auth/usecase"
 	"github.com/trello-analog/backend/config"
+	"github.com/trello-analog/backend/services"
 	"gorm.io/driver/postgres"
 	"gorm.io/gorm"
 	"log"
@@ -64,7 +65,9 @@ func initDB() *gorm.DB {
 		"/" +
 		cfg.Database.Database +
 		"?sslmode=disable"
-	db, err := gorm.Open(postgres.Open(dsn), &gorm.Config{})
+	db, err := gorm.Open(postgres.Open(dsn), &gorm.Config{
+		Logger: services.NewLogger(),
+	})
 
 	if err != nil {
 		log.Fatal("Database connection was failed!")

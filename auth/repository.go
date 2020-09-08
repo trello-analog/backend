@@ -13,4 +13,7 @@ type AuthRepository interface {
 	CreateConfirmationCode(code *model.ConfirmationCode) *customerrors.APIError
 	GetConfirmationCodeByField(field string, value interface{}) (*model.ConfirmationCode, *customerrors.APIError)
 	DeleteConfirmationCode(id int) *customerrors.APIError
+	UpdateConfirmationCode(code *model.ConfirmationCode) *customerrors.APIError
+	GetConfirmationCodesByField(field string, value interface{}) ([]model.ConfirmationCode, *customerrors.APIError)
+	GetLastConfirmationCodeByField(field string, value interface{}) (*model.ConfirmationCode, *customerrors.APIError)
 }

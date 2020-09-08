@@ -75,11 +75,49 @@ func (a *AuthRepository) GetConfirmationCodeByField(field string, value interfac
 
 func (a *AuthRepository) DeleteConfirmationCode(id int) *customerrors.APIError {
 	code := &model.ConfirmationCode{}
-	result := a.db.Table("confirmation_codes").First(&code, id)
+	result := a.db.Table("confirmation_codes").Delete(&code, id)
 
 	if result.Error != nil {
 		return customerrors.NewAPIError(http.StatusNotFound, 10, result.Error.Error())
 	}
 
 	return nil
+}
+
+func (a *AuthRepository) UpdateConfirmationCode(code *model.ConfirmationCode) *customerrors.APIError {
+	result := a.db.Model(&code).Table("confirmation_codes").Updates(map[string]interface{}{
+		"code":      code.Code,
+		"user_id":   code.UserId,
+		"expired":   code.Expired,
+		"confirmed": code.Confirmed,
+		"last":      code.Last,
+	})
+
+	if result.Error != nil {
+		return customerrors.NewAPIError(http.StatusNotFound, 10, result.Error.Error())
+	}
+
+	return nil
+}
+
+func (a *AuthRepository) GetConfirmationCodesByField(field string, value interface{}) ([]model.ConfirmationCode, *customerrors.APIError) {
+	codes := []model.ConfirmationCode{}
+	result := a.db.Table("confirmation_codes").Where(field+" = ?", value).Find(&codes)
+
+	if result.Error != nil {
+		return nil, customerrors.NewAPIError(http.StatusNotFound, 10, result.Error.Error())
+	}
+
+	return codes, nil
+}
+
+func (a *AuthRepository) GetLastConfirmationCodeByField(field string, value interface{}) (*model.ConfirmationCode, *customerrors.APIError) {
+	code := &model.ConfirmationCode{}
+	result := a.db.Table("confirmation_codes").Where(field+" = ?", value).Last(&code)
+
+	if result.Error != nil {
+		return nil, customerrors.NewAPIError(http.StatusNotFound, 10, result.Error.Error())
+	}
+
+	return code, nil
 }
