@@ -28,5 +28,5 @@ var (
 	PostServerError        = NewAPIError(http.StatusBadRequest, 7, "Ошибка почтового сервера!")
 	CodeExpired            = NewAPIError(http.StatusBadRequest, 8, "Время жизни этого кода подтверждения истёк!")
 	ParseError             = NewAPIError(http.StatusBadRequest, 9, "Ошибка при запросе")
-	EmailNotExists         = NewAPIError(http.StatusNotFound, 10, "Такой e-mail на зарегистрирован!")
+	EmailNotExists         = NewAPIError(http.StatusNotFound, 10, "Данный e-mail на зарегистрирован!")
 )

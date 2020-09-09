@@ -18,4 +18,10 @@ type AuthRepository interface {
 	UpdateConfirmationCode(code *model.ConfirmationCode) *customerrors.APIError
 	GetConfirmationCodesByField(field string, value interface{}) ([]model.ConfirmationCode, *customerrors.APIError)
 	GetLastConfirmationCodeByField(field string, value interface{}) (*model.ConfirmationCode, *customerrors.APIError)
+
+	CreateForgotPasswordCode(code *model.ConfirmationCode) *customerrors.APIError
+	GetForgotPasswordCodeByField(field string, value interface{}) (*model.ConfirmationCode, *customerrors.APIError)
+	GetLastForgotPasswordCodeByField(field string, value interface{}) (*model.ConfirmationCode, *customerrors.APIError)
+	UpdateForgotPasswordCode(code *model.ConfirmationCode) *customerrors.APIError
+	CountForgotPasswordCodes(field string, value interface{}) (int64, *customerrors.APIError)
 }

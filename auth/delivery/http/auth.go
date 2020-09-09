@@ -10,8 +10,7 @@ func AuthEndpoints(router *mux.Router, useCase auth.UseCase) {
 	handler := NewAuthHandler(useCase)
 
 	router.HandleFunc("/sign-up", handler.SignUp()).Methods(http.MethodPost)
-	router.
-		HandleFunc("/confirm", handler.ConfirmUser()).
-		Methods(http.MethodPost)
+	router.HandleFunc("/confirm", handler.ConfirmUser()).Methods(http.MethodPost)
 	router.HandleFunc("/resend-confirm", handler.ResendConfirmationCode()).Methods(http.MethodPost)
+	router.HandleFunc("/forgot-password", handler.ForgotPassword()).Methods(http.MethodPost)
 }

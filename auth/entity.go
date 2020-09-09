@@ -29,3 +29,7 @@ type ConfirmUserResponse struct {
 type ResendConfirmationCodeRequest struct {
 	Email string `json:"email"`
 }
+
+type ForgotPasswordRequest struct {
+	Email string `json:"email"`
+}

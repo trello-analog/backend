@@ -36,12 +36,10 @@ func (auc *AuthUseCase) SignUp(user *model.User) (*entity.IdResponse, *customerr
 	if user.Validate() != nil {
 		return nil, customerrors.NewAPIError(http.StatusBadRequest, 8, user.Validate().Error())
 	}
+
 	user.CryptPassword()
-
 	result, err := auc.repository.CreateUser(user)
-
 	confirmationCode := model.NewConfirmationCode(result.ID)
-
 	codeErr := auc.repository.CreateConfirmationCode(confirmationCode)
 
 	if codeErr != nil {
@@ -54,6 +52,7 @@ func (auc *AuthUseCase) SignUp(user *model.User) (*entity.IdResponse, *customerr
 		Host:  cfg.Client.Host,
 		Code:  confirmationCode.Code,
 	})
+
 	if sendError != nil {
 		return nil, customerrors.PostServerError
 	}
@@ -68,7 +67,6 @@ func (auc *AuthUseCase) SignUp(user *model.User) (*entity.IdResponse, *customerr
 
 func (auc *AuthUseCase) ConfirmUser(data *entity.ConfirmationUserRequest) (*auth.ConfirmUserResponse, *customerrors.APIError) {
 	code, err := auc.repository.GetConfirmationCodeByField("code", data.Code)
-
 	if err != nil {
 		return nil, err
 	}
@@ -154,6 +152,19 @@ func (auc *AuthUseCase) ResendConfirmationCode(email string) *customerrors.APIEr
 
 func (auc *AuthUseCase) ForgotPassword(email string) *customerrors.APIError {
 	user, err := auc.repository.GetUserByField("email", email)
+	forgotPasswordCodesCount, _ := auc.repository.CountForgotPasswordCodes("user_id", user.ID)
+
+	if forgotPasswordCodesCount > 0 {
+		currentCode, _ := auc.repository.GetLastForgotPasswordCodeByField("user_id", user.ID)
+		currentCode.MakeIrrelevant()
+		updateErr := auc.repository.UpdateForgotPasswordCode(currentCode)
+
+		if updateErr != nil {
+			return updateErr
+		}
+	}
+
+	cfg := config.GetConfig()
 
 	if err != nil {
 		return err
@@ -163,7 +174,19 @@ func (auc *AuthUseCase) ForgotPassword(email string) *customerrors.APIError {
 		return customerrors.EmailNotExists
 	}
 
-	sendError := auc.sender.SendForgotPasswordEmail(&emails.SignUpEmail{})
+	code := model.NewConfirmationCode(user.ID)
+	createError := auc.repository.CreateForgotPasswordCode(code)
+
+	if createError != nil {
+		return createError
+	}
+
+	sendError := auc.sender.SendForgotPasswordEmail(&emails.SignUpEmail{
+		Email: user.Email,
+		Name:  user.Login,
+		Host:  cfg.Client.Host,
+		Code:  code.Code,
+	})
 
 	if sendError != nil {
 		return customerrors.PostServerError

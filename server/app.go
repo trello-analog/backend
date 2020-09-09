@@ -80,6 +80,5 @@ func initDB() *gorm.DB {
 
 func initRouter() *mux.Router {
 	router := mux.NewRouter()
-
 	return router
 }

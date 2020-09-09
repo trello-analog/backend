@@ -29,6 +29,7 @@ func (ah *AuthHandler) SignUp() http.HandlerFunc {
 
 		if err != nil {
 			ah.response.SetWriter(writer).SetData(customerrors.ParseError).Error()
+			return
 		}
 
 		result, signUpError := ah.useCase.SignUp(user)
@@ -44,11 +45,13 @@ func (ah *AuthHandler) SignUp() http.HandlerFunc {
 func (ah *AuthHandler) ConfirmUser() http.HandlerFunc {
 	return func(writer http.ResponseWriter, request *http.Request) {
 		data := &entity.ConfirmationUserRequest{}
-
 		err := json.NewDecoder(request.Body).Decode(&data)
+
 		if err != nil {
 			ah.response.SetWriter(writer).SetData(customerrors.ParseError).Error()
+			return
 		}
+
 		confirm, confirmError := ah.useCase.ConfirmUser(data)
 
 		if confirmError != nil {
@@ -67,12 +70,35 @@ func (ah *AuthHandler) ResendConfirmationCode() http.HandlerFunc {
 
 		if err != nil {
 			ah.response.SetWriter(writer).SetData(customerrors.ParseError).Error()
+			return
 		}
 
 		sendError := ah.useCase.ResendConfirmationCode(data.Email)
 
 		if sendError != nil {
 			ah.response.SetWriter(writer).SetData(sendError).Error()
+			return
+		}
+
+		ah.response.SetWriter(writer).SetData(struct{}{}).Success()
+	}
+}
+
+func (ah *AuthHandler) ForgotPassword() http.HandlerFunc {
+	return func(writer http.ResponseWriter, request *http.Request) {
+		data := &auth.ForgotPasswordRequest{}
+		err := json.NewDecoder(request.Body).Decode(&data)
+
+		if err != nil {
+			ah.response.SetWriter(writer).SetData(customerrors.ParseError).Error()
+			return
+		}
+
+		forgotError := ah.useCase.ForgotPassword(data.Email)
+
+		if forgotError != nil {
+			ah.response.SetWriter(writer).SetData(forgotError).Error()
+			return
 		}
 
 		ah.response.SetWriter(writer).SetData(struct{}{}).Success()
