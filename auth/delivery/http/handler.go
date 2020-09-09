@@ -2,6 +2,7 @@ package http
 
 import (
 	"encoding/json"
+	"github.com/gorilla/mux"
 	"github.com/trello-analog/backend/auth"
 	"github.com/trello-analog/backend/customerrors"
 	"github.com/trello-analog/backend/entity"
@@ -102,5 +103,19 @@ func (ah *AuthHandler) ForgotPassword() http.HandlerFunc {
 		}
 
 		ah.response.SetWriter(writer).SetData(struct{}{}).Success()
+	}
+}
+
+func (ah *AuthHandler) CheckForgotPasswordCode() http.HandlerFunc {
+	return func(writer http.ResponseWriter, request *http.Request) {
+		id := mux.Vars(request)["id"]
+		check, err := ah.useCase.CheckForgotPassword(id)
+
+		if err != nil {
+			ah.response.SetWriter(writer).SetData(err).Error()
+			return
+		}
+
+		ah.response.SetWriter(writer).SetData(check).Success()
 	}
 }

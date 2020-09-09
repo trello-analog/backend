@@ -55,3 +55,11 @@ func (cc *ConfirmationCode) MakeIrrelevant() *ConfirmationCode {
 	cc.Last = false
 	return cc
 }
+
+func (cc *ConfirmationCode) IsEmpty() bool {
+	return cc.ID == 0
+}
+
+func (cc *ConfirmationCode) IsRelevant() bool {
+	return cc.Last
+}

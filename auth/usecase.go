@@ -11,4 +11,5 @@ type UseCase interface {
 	ConfirmUser(data *entity.ConfirmationUserRequest) (*ConfirmUserResponse, *customerrors.APIError)
 	ResendConfirmationCode(email string) *customerrors.APIError
 	ForgotPassword(email string) *customerrors.APIError
+	CheckForgotPassword(code string) (*ConfirmUserResponse, *customerrors.APIError)
 }

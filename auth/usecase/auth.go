@@ -194,3 +194,27 @@ func (auc *AuthUseCase) ForgotPassword(email string) *customerrors.APIError {
 
 	return nil
 }
+
+func (auc *AuthUseCase) CheckForgotPassword(code string) (*auth.ConfirmUserResponse, *customerrors.APIError) {
+	forgotPasswordCode, err := auc.repository.GetForgotPasswordCodeByField("code", code)
+
+	if err != nil {
+		return nil, err
+	}
+
+	if forgotPasswordCode.IsEmpty() {
+		return nil, customerrors.NotFound
+	}
+
+	if forgotPasswordCode.IsConfirmed() || forgotPasswordCode.IsCodeExpired() || forgotPasswordCode.IsRelevant() {
+		return &auth.ConfirmUserResponse{
+			Status:  "error",
+			Message: "Данная ссылка уже нективна!",
+		}, nil
+	}
+
+	return &auth.ConfirmUserResponse{
+		Status:  "success",
+		Message: "",
+	}, nil
+}
