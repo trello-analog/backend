@@ -41,9 +41,18 @@ func (u *User) Validate() error {
 	)
 }
 
+func (u *User) SetPassword(password string) *User {
+	u.Password = password
+	return u
+}
+
 func (u *User) CryptPassword() *User {
 	ps := services.PasswordService{}
 	u.Password = ps.GetCryptPassword(u.Password)
-
 	return u
+}
+
+func (u *User) IsPasswordEqual(password string) bool {
+	ps := services.PasswordService{}
+	return ps.ComparePasswords(password, u.Password)
 }

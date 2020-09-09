@@ -206,11 +206,60 @@ func (auc *AuthUseCase) CheckForgotPassword(code string) (*auth.ConfirmUserRespo
 		return nil, customerrors.NotFound
 	}
 
-	if forgotPasswordCode.IsConfirmed() || forgotPasswordCode.IsCodeExpired() || forgotPasswordCode.IsRelevant() {
+	if forgotPasswordCode.IsConfirmed() || forgotPasswordCode.IsCodeExpired() || !forgotPasswordCode.IsRelevant() {
 		return &auth.ConfirmUserResponse{
 			Status:  "error",
 			Message: "Данная ссылка уже нективна!",
 		}, nil
+	}
+
+	return &auth.ConfirmUserResponse{
+		Status:  "success",
+		Message: "",
+	}, nil
+}
+
+func (auc *AuthUseCase) RestorePassword(data *auth.RestorePasswordRequest) (*auth.ConfirmUserResponse, *customerrors.APIError) {
+	forgotPasswordCode, err := auc.repository.GetForgotPasswordCodeByField("code", data.Code)
+
+	if err != nil {
+		return nil, err
+	}
+
+	if forgotPasswordCode.IsEmpty() {
+		return nil, customerrors.NotFound
+	}
+
+	if forgotPasswordCode.IsConfirmed() || forgotPasswordCode.IsCodeExpired() || !forgotPasswordCode.IsRelevant() {
+		return nil, customerrors.ForgotPasswordCodeIsNotActive
+	}
+
+	user, userErr := auc.repository.GetUserById(forgotPasswordCode.UserId)
+
+	if userErr != nil {
+		return nil, userErr
+	}
+
+	if user.IsPasswordEqual(data.NewPassword) {
+		return nil, customerrors.EnteredCurrentPassword
+	}
+
+	if data.NewPassword != data.RepeatNewPassword {
+		return nil, customerrors.PasswordsAreNotEqual
+	}
+
+	user.SetPassword(data.NewPassword).CryptPassword()
+	forgotPasswordCode.MakeConfirmed()
+	updateErr := auc.repository.UpdateUser(user)
+
+	if updateErr != nil {
+		return nil, updateErr
+	}
+
+	updateForgotPasswordCodeError := auc.repository.UpdateForgotPasswordCode(forgotPasswordCode)
+
+	if updateForgotPasswordCodeError != nil {
+		return nil, updateForgotPasswordCodeError
 	}
 
 	return &auth.ConfirmUserResponse{

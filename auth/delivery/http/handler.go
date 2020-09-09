@@ -119,3 +119,23 @@ func (ah *AuthHandler) CheckForgotPasswordCode() http.HandlerFunc {
 		ah.response.SetWriter(writer).SetData(check).Success()
 	}
 }
+
+func (ah *AuthHandler) RestorePassword() http.HandlerFunc {
+	return func(writer http.ResponseWriter, request *http.Request) {
+		data := &auth.RestorePasswordRequest{}
+		err := json.NewDecoder(request.Body).Decode(&data)
+
+		if err != nil {
+			return
+		}
+
+		restore, restoreErr := ah.useCase.RestorePassword(data)
+
+		if restoreErr != nil {
+			ah.response.SetWriter(writer).SetData(restoreErr).Error()
+			return
+		}
+
+		ah.response.SetWriter(writer).SetData(restore).Success()
+	}
+}

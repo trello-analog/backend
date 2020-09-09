@@ -6,9 +6,9 @@ type SignInRequest struct {
 }
 
 type RestorePasswordRequest struct {
-	Code                  string `json:"code"`
-	NewPassword           string `json:"new_password"`
-	RepeatPasswordRequest string `json:"repeat_password_request"`
+	Code              string `json:"code"`
+	NewPassword       string `json:"newPassword"`
+	RepeatNewPassword string `json:"repeatNewPassword"`
 }
 
 type TwoAuthCodeRequest struct {

@@ -12,4 +12,5 @@ type UseCase interface {
 	ResendConfirmationCode(email string) *customerrors.APIError
 	ForgotPassword(email string) *customerrors.APIError
 	CheckForgotPassword(code string) (*ConfirmUserResponse, *customerrors.APIError)
+	RestorePassword(data *RestorePasswordRequest) (*ConfirmUserResponse, *customerrors.APIError)
 }

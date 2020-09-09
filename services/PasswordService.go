@@ -18,9 +18,9 @@ func (ps *PasswordService) GetCryptPassword(rawPassword string) string {
 
 func (ps *PasswordService) ComparePasswords(rawPassword, cryptedPassword string) bool {
 	secret := config.GetConfig().PasswordSecret
-	cryptedRawPassword, err := bcrypt.GenerateFromPassword([]byte(rawPassword+secret), bcrypt.MinCost)
+	err := bcrypt.CompareHashAndPassword([]byte(cryptedPassword), []byte(rawPassword+secret))
 	if err != nil {
 		return false
 	}
-	return cryptedPassword == string(cryptedRawPassword)
+	return true
 }

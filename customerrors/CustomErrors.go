@@ -29,5 +29,7 @@ var (
 	CodeExpired                   = NewAPIError(http.StatusBadRequest, 8, "Время жизни этого кода подтверждения истёк!")
 	ParseError                    = NewAPIError(http.StatusBadRequest, 9, "Ошибка при запросе")
 	EmailNotExists                = NewAPIError(http.StatusNotFound, 10, "Данный e-mail на зарегистрирован!")
-	ForgotPasswordCodeIsNotActive = NewAPIError(http.StatusNotFound, 11, "Даннная ссылка больше не активна!")
+	ForgotPasswordCodeIsNotActive = NewAPIError(http.StatusBadRequest, 11, "Даннная ссылка больше не активна!")
+	EnteredCurrentPassword        = NewAPIError(http.StatusBadRequest, 12, "Вы ввели текущий пароль!")
+	PasswordsAreNotEqual          = NewAPIError(http.StatusBadRequest, 13, "Пароли не совпадают!")
 )
