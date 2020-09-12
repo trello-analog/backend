@@ -13,4 +13,5 @@ type UseCase interface {
 	ForgotPassword(email string) *customerrors.APIError
 	CheckForgotPassword(code string) (*ConfirmUserResponse, *customerrors.APIError)
 	RestorePassword(data *RestorePasswordRequest) (*ConfirmUserResponse, *customerrors.APIError)
+	SignIn(data *SignInRequest) (*SignInResponseToken, *SignInResponseTwoAuth, *customerrors.APIError)
 }

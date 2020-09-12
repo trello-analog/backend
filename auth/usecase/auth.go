@@ -7,6 +7,7 @@ import (
 	"github.com/trello-analog/backend/emails"
 	"github.com/trello-analog/backend/entity"
 	model "github.com/trello-analog/backend/models"
+	"github.com/trello-analog/backend/services"
 	"net/http"
 )
 
@@ -23,8 +24,8 @@ func NewAuthUseCase(repository auth.AuthRepository) *AuthUseCase {
 }
 
 func (auc *AuthUseCase) SignUp(user *model.User) (*entity.IdResponse, *customerrors.APIError) {
-	userByLogin, _ := auc.repository.GetUserByField("login", &user.Login)
-	userByEmail, _ := auc.repository.GetUserByField("email", &user.Email)
+	userByLogin, _ := auc.repository.GetUserByQuery("login = ?", user.Login)
+	userByEmail, _ := auc.repository.GetUserByQuery("email = ?", user.Email)
 	cfg := config.GetConfig()
 
 	if userByLogin.ID != 0 {
@@ -37,7 +38,7 @@ func (auc *AuthUseCase) SignUp(user *model.User) (*entity.IdResponse, *customerr
 		return nil, customerrors.NewAPIError(http.StatusBadRequest, 8, user.Validate().Error())
 	}
 
-	user.CryptPassword()
+	user.CryptPassword().CreateTokenCode()
 	result, err := auc.repository.CreateUser(user)
 	confirmationCode := model.NewConfirmationCode(result.ID)
 	codeErr := auc.repository.CreateConfirmationCode(confirmationCode)
@@ -266,4 +267,40 @@ func (auc *AuthUseCase) RestorePassword(data *auth.RestorePasswordRequest) (*aut
 		Status:  "success",
 		Message: "",
 	}, nil
+}
+
+func (auc *AuthUseCase) SignIn(data *auth.SignInRequest) (*auth.SignInResponseToken, *auth.SignInResponseTwoAuth, *customerrors.APIError) {
+	user, err := auc.repository.GetUserByQuery("login = '"+data.Name+"' OR email = '"+data.Name+"'", nil)
+
+	if err != nil {
+		return nil, nil, err
+	}
+
+	if user.IsEmpty() {
+		return nil, nil, customerrors.UserNotFound
+	}
+
+	if !user.IsPasswordEqual(data.Password) {
+		return nil, nil, customerrors.WrongCredential
+	}
+
+	code, _ := auc.repository.GetLastConfirmationCodeByField("user_id", user.ID)
+
+	if !code.IsConfirmed() {
+		return nil, nil, customerrors.UserNotConfirmed
+	}
+
+	//if user.IsTwoAuth() {
+	//	twoAuthCode := model.NewConfirmationCode(user.ID)
+	//
+	//}
+
+	token := services.NewToken(&services.TokenData{
+		UserId:   user.ID,
+		TempCode: user.TokenCode,
+	})
+
+	return &auth.SignInResponseToken{
+		Token: token.GetToken(),
+	}, nil, nil
 }

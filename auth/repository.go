@@ -7,6 +7,7 @@ import (
 )
 
 type AuthRepository interface {
+	GetUserByQuery(query interface{}, args ...interface{}) (*model.User, *customerrors.APIError)
 	CreateUser(user *model.User) (*entity.IdResponse, *customerrors.APIError)
 	GetUserById(id int) (*model.User, *customerrors.APIError)
 	GetUserByField(field string, value interface{}) (*model.User, *customerrors.APIError)
@@ -24,4 +25,7 @@ type AuthRepository interface {
 	GetLastForgotPasswordCodeByField(field string, value interface{}) (*model.ConfirmationCode, *customerrors.APIError)
 	UpdateForgotPasswordCode(code *model.ConfirmationCode) *customerrors.APIError
 	CountForgotPasswordCodes(field string, value interface{}) (int64, *customerrors.APIError)
+
+	//CreateTwoAuthCode(code *model.ConfirmationCode) *customerrors.APIError
+	//GetTwoAuthCodeByQuery(query interface{}, args ...interface{}) (*model.ConfirmationCode, *customerrors.APIError)
 }

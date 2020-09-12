@@ -30,6 +30,17 @@ func (a *AuthRepository) forgotPasswordTable() *gorm.DB {
 	return a.db.Table("forgot_password")
 }
 
+func (a *AuthRepository) GetUserByQuery(query interface{}, args ...interface{}) (*model.User, *customerrors.APIError) {
+	user := &model.User{}
+	result := a.userTable().Where(query, args).Find(&user)
+
+	if result.Error != nil {
+		return nil, customerrors.NewAPIError(http.StatusNotFound, 10, result.Error.Error())
+	}
+
+	return user, nil
+}
+
 func (a *AuthRepository) CreateUser(user *model.User) (*entity.IdResponse, *customerrors.APIError) {
 	u := a.userTable().Create(&user)
 

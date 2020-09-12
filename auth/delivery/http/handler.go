@@ -139,3 +139,28 @@ func (ah *AuthHandler) RestorePassword() http.HandlerFunc {
 		ah.response.SetWriter(writer).SetData(restore).Success()
 	}
 }
+
+func (ah *AuthHandler) SignIn() http.HandlerFunc {
+	return func(writer http.ResponseWriter, request *http.Request) {
+		data := &auth.SignInRequest{}
+		err := json.NewDecoder(request.Body).Decode(&data)
+
+		if err != nil {
+			return
+		}
+
+		token, twoAuth, signInErr := ah.useCase.SignIn(data)
+
+		if signInErr != nil {
+			ah.response.SetWriter(writer).SetData(signInErr).Error()
+			return
+		}
+
+		if token == nil && twoAuth != nil {
+			ah.response.SetWriter(writer).SetData(twoAuth).Success()
+			return
+		}
+
+		ah.response.SetWriter(writer).SetData(token).Success()
+	}
+}

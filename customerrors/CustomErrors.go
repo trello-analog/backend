@@ -32,4 +32,7 @@ var (
 	ForgotPasswordCodeIsNotActive = NewAPIError(http.StatusBadRequest, 11, "Даннная ссылка больше не активна!")
 	EnteredCurrentPassword        = NewAPIError(http.StatusBadRequest, 12, "Вы ввели текущий пароль!")
 	PasswordsAreNotEqual          = NewAPIError(http.StatusBadRequest, 13, "Пароли не совпадают!")
+	WrongCredential               = NewAPIError(http.StatusBadRequest, 14, "Неверные данные для входа!")
+	UserNotFound                  = NewAPIError(http.StatusNotFound, 15, "Юзер не найден!")
+	UserNotConfirmed              = NewAPIError(http.StatusNotFound, 16, "Юзер не подтвержден!")
 )

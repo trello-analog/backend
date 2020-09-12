@@ -9,7 +9,8 @@ import (
 )
 
 type TokenData struct {
-	UserId int
+	UserId   int    `json:"user_id"`
+	TempCode string `json:"temp_code"`
 }
 
 type TokenClaims struct {
@@ -21,7 +22,19 @@ type TokenService struct {
 	Token *entity.Token
 }
 
-func (t *TokenService) GenerateToken(data *TokenData) error {
+func NewToken(data *TokenData) *TokenService {
+	token, err := GenerateToken(data)
+
+	if err != nil {
+		return &TokenService{}
+	}
+
+	return &TokenService{
+		Token: token,
+	}
+}
+
+func GenerateToken(data *TokenData) (*entity.Token, error) {
 	accessToken := jwt.NewWithClaims(jwt.SigningMethodHS256, TokenClaims{
 		Data: data,
 		StandardClaims: jwt.StandardClaims{
@@ -39,19 +52,17 @@ func (t *TokenService) GenerateToken(data *TokenData) error {
 	refreshTokenString, refreshError := refreshToken.SignedString([]byte(config.GetConfig().RefreshTokenSecret))
 
 	if accessError != nil {
-		return errors.New("Access token error")
+		return nil, errors.New("Access token error")
 	}
 
 	if refreshError != nil {
-		return errors.New("Refresh token error")
+		return nil, errors.New("Refresh token error")
 	}
 
-	t.Token = &entity.Token{
+	return &entity.Token{
 		AccessToken:  accessTokenString,
 		RefreshToken: refreshTokenString,
-	}
-
-	return nil
+	}, nil
 }
 
 func (t *TokenService) GetToken() *entity.Token {

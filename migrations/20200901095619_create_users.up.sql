@@ -4,5 +4,6 @@ CREATE TABLE users (
     login varchar not null unique,
     password varchar not null,
     two_auth boolean not null,
-    avatar varchar
+    avatar varchar,
+    token_code varchar not null
 );

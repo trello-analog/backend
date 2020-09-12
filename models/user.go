@@ -3,6 +3,7 @@ package model
 import (
 	validation "github.com/go-ozzo/ozzo-validation"
 	"github.com/go-ozzo/ozzo-validation/is"
+	uuid "github.com/nu7hatch/gouuid"
 	"github.com/trello-analog/backend/customerrors"
 	"github.com/trello-analog/backend/services"
 )
@@ -13,12 +14,13 @@ type UserRole struct {
 }
 
 type User struct {
-	ID       int    `json:"id"`
-	Email    string `json:"email"`
-	Login    string `json:"login"`
-	Password string `json:"password"`
-	TwoAuth  bool   `json:"two_auth"`
-	Avatar   string `json:"avatar"`
+	ID        int    `json:"id"`
+	Email     string `json:"email"`
+	Login     string `json:"login"`
+	Password  string `json:"password"`
+	TwoAuth   bool   `json:"twoAuth"`
+	Avatar    string `json:"avatar"`
+	TokenCode string `json:"token_code"`
 }
 
 func (u *User) Validate() error {
@@ -55,4 +57,18 @@ func (u *User) CryptPassword() *User {
 func (u *User) IsPasswordEqual(password string) bool {
 	ps := services.PasswordService{}
 	return ps.ComparePasswords(password, u.Password)
+}
+
+func (u *User) IsEmpty() bool {
+	return u.ID == 0
+}
+
+func (u *User) IsTwoAuth() bool {
+	return u.TwoAuth
+}
+
+func (u *User) CreateTokenCode() *User {
+	code, _ := uuid.NewV4()
+	u.TokenCode = code.String()
+	return u
 }

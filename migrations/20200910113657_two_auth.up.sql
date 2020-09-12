@@ -1,4 +1,4 @@
-CREATE TABLE forgot_password
+CREATE TABLE two_auth
 (
     id        bigserial not null primary key,
     user_id   bigserial not null references users(id),

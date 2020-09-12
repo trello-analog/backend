@@ -15,4 +15,5 @@ func AuthEndpoints(router *mux.Router, useCase auth.UseCase) {
 	router.HandleFunc("/forgot-password", handler.ForgotPassword()).Methods(http.MethodPost)
 	router.HandleFunc("/restore-password", handler.RestorePassword()).Methods(http.MethodPost)
 	router.HandleFunc("/restore-password/{id}", handler.CheckForgotPasswordCode()).Methods(http.MethodGet)
+	router.HandleFunc("/sign-in", handler.SignIn()).Methods(http.MethodPost)
 }
