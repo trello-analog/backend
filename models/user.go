@@ -23,6 +23,14 @@ type User struct {
 	TokenCode string `json:"token_code"`
 }
 
+type UserForFrontend struct {
+	ID      int    `json:"id"`
+	Email   string `json:"email"`
+	Login   string `json:"login"`
+	TwoAuth bool   `json:"twoAuth"`
+	Avatar  string `json:"avatar"`
+}
+
 func (u *User) Validate() error {
 	return validation.ValidateStruct(
 		u,
@@ -71,4 +79,14 @@ func (u *User) CreateTokenCode() *User {
 	code, _ := uuid.NewV4()
 	u.TokenCode = code.String()
 	return u
+}
+
+func (u *User) ToClientStruct() *UserForFrontend {
+	return &UserForFrontend{
+		ID:      u.ID,
+		Email:   u.Email,
+		Login:   u.Login,
+		TwoAuth: u.TwoAuth,
+		Avatar:  u.Avatar,
+	}
 }

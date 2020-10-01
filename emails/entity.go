@@ -6,3 +6,9 @@ type SignUpEmail struct {
 	Host  string `json:"host"`
 	Code  string `json:"code"`
 }
+
+type TwoAuthEmail struct {
+	Name  string `json:"name"`
+	Code  string `json:"code"`
+	Email string `json:"email"`
+}

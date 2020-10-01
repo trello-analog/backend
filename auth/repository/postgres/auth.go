@@ -1,38 +1,42 @@
 package postgres
 
 import (
+	"context"
+	"github.com/go-redis/redis/v8"
 	"github.com/trello-analog/backend/customerrors"
 	"github.com/trello-analog/backend/entity"
 	model "github.com/trello-analog/backend/models"
 	"gorm.io/gorm"
 	"net/http"
+	"strconv"
+	"time"
 )
 
 type AuthRepository struct {
-	db *gorm.DB
+	db *entity.Database
 }
 
-func NewAuthRepository(db *gorm.DB) *AuthRepository {
+func NewAuthRepository(db *entity.Database) *AuthRepository {
 	return &AuthRepository{
 		db: db,
 	}
 }
 
 func (a *AuthRepository) userTable() *gorm.DB {
-	return a.db.Table("users")
+	return a.db.Postgres.Table("users")
 }
 
 func (a *AuthRepository) confirmationCodeTable() *gorm.DB {
-	return a.db.Table("confirmation_codes")
+	return a.db.Postgres.Table("confirmation_codes")
 }
 
 func (a *AuthRepository) forgotPasswordTable() *gorm.DB {
-	return a.db.Table("forgot_password")
+	return a.db.Postgres.Table("forgot_password")
 }
 
 func (a *AuthRepository) GetUserByQuery(query interface{}, args ...interface{}) (*model.User, *customerrors.APIError) {
 	user := &model.User{}
-	result := a.userTable().Where(query, args).Find(&user)
+	result := a.userTable().Where(query, args...).Find(&user)
 
 	if result.Error != nil {
 		return nil, customerrors.NewAPIError(http.StatusNotFound, 10, result.Error.Error())
@@ -210,12 +214,60 @@ func (a *AuthRepository) UpdateForgotPasswordCode(code *model.ConfirmationCode) 
 }
 
 func (a *AuthRepository) CountForgotPasswordCodes(field string, value interface{}) (int64, *customerrors.APIError) {
-	codes := []model.ConfirmationCode{}
-	result := a.forgotPasswordTable().Where(field+" = ?", value).Find(&codes)
+	var count int64 = 0
+	result := a.forgotPasswordTable().Where(field+" = ?", value).Count(&count)
 
 	if result.Error != nil {
 		return 0, customerrors.NewAPIError(http.StatusBadRequest, 10, result.Error.Error())
 	}
 
-	return result.RowsAffected, nil
+	return count, nil
+}
+
+func (a *AuthRepository) CreateTwoAuthCode(code string, userID int) *customerrors.APIError {
+	err := a.db.Redis.Set(context.Background(), strconv.Itoa(userID), code, time.Minute*3).Err()
+	if err != nil {
+		return customerrors.NewAPIError(http.StatusBadRequest, 10, err.Error())
+	}
+
+	return nil
+}
+
+func (a *AuthRepository) GetTwoAuthCode(key string) (string, *customerrors.APIError) {
+	val, err := a.db.Redis.Get(context.Background(), key).Result()
+
+	if err == redis.Nil {
+		return "", customerrors.CodeNotFound
+	}
+
+	if err != nil {
+		return "", customerrors.NewAPIError(http.StatusBadRequest, 10, err.Error())
+	}
+
+	return val, nil
+}
+
+func (a *AuthRepository) GetExpirationTwoAuthCodeByKey(key string) (float64, *customerrors.APIError) {
+	exp, err := a.db.Redis.TTL(context.Background(), key).Result()
+	if err != nil {
+		return 0, customerrors.NewAPIError(http.StatusBadRequest, 10, err.Error())
+	}
+	if exp < 0 {
+		return 0, customerrors.CodeNotFound
+	}
+	return exp.Seconds(), nil
+}
+
+func (a *AuthRepository) DeleteTwoAuthCode(key string) *customerrors.APIError {
+	_, err := a.db.Redis.Del(context.Background(), key).Result()
+
+	if err == redis.Nil {
+		return customerrors.WrongTwoAuthCode
+	}
+
+	if err != nil {
+		return customerrors.NewAPIError(http.StatusBadRequest, 10, err.Error())
+	}
+
+	return nil
 }

@@ -1,6 +1,8 @@
 package auth
 
-import "github.com/trello-analog/backend/entity"
+import (
+	"github.com/trello-analog/backend/entity"
+)
 
 type SignInRequest struct {
 	Name     string `json:"name"`
@@ -12,8 +14,8 @@ type SignInResponseToken struct {
 }
 
 type SignInResponseTwoAuth struct {
-	CheckCode string `json:"check_code"`
-	Expired   string `json:"expired"`
+	UserId  int     `json:"userId"`
+	Expired float64 `json:"expired"`
 }
 
 type RestorePasswordRequest struct {
@@ -23,8 +25,8 @@ type RestorePasswordRequest struct {
 }
 
 type TwoAuthCodeRequest struct {
-	CheckCode string `json:"check_code"`
-	Code      string `json:"code"`
+	Code   string `json:"code"`
+	UserId int    `json:"userId"`
 }
 
 type ConfirmUserResponse struct {

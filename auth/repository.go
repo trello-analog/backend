@@ -26,6 +26,8 @@ type AuthRepository interface {
 	UpdateForgotPasswordCode(code *model.ConfirmationCode) *customerrors.APIError
 	CountForgotPasswordCodes(field string, value interface{}) (int64, *customerrors.APIError)
 
-	//CreateTwoAuthCode(code *model.ConfirmationCode) *customerrors.APIError
-	//GetTwoAuthCodeByQuery(query interface{}, args ...interface{}) (*model.ConfirmationCode, *customerrors.APIError)
+	CreateTwoAuthCode(code string, userID int) *customerrors.APIError
+	GetTwoAuthCode(key string) (string, *customerrors.APIError)
+	GetExpirationTwoAuthCodeByKey(key string) (float64, *customerrors.APIError)
+	DeleteTwoAuthCode(key string) *customerrors.APIError
 }

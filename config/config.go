@@ -35,6 +35,7 @@ type Config struct {
 	PasswordSecret     string         `yaml:"passwordSecret"`
 	AccessTokenSecret  string         `yaml:"accessTokenSecret"`
 	RefreshTokenSecret string         `yaml:"refreshTokenSecret"`
+	RedisPassword      string         `yaml:"redisPassword"`
 }
 
 func GetConfig() *Config {

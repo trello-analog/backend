@@ -164,3 +164,82 @@ func (ah *AuthHandler) SignIn() http.HandlerFunc {
 		ah.response.SetWriter(writer).SetData(token).Success()
 	}
 }
+
+func (ah *AuthHandler) ResendTwoAuth() http.HandlerFunc {
+	return func(writer http.ResponseWriter, request *http.Request) {
+		type requestStruct struct {
+			UserId int `json:"userId"`
+		}
+		data := &requestStruct{}
+		err := json.NewDecoder(request.Body).Decode(&data)
+
+		if err != nil {
+			return
+		}
+
+		_, code, resendError := ah.useCase.ResendTwoAuthCode(data.UserId)
+
+		if resendError != nil {
+			ah.response.SetWriter(writer).SetData(resendError).Error()
+			return
+		}
+
+		ah.response.SetWriter(writer).SetData(code).Success()
+	}
+}
+
+func (ah *AuthHandler) Login() http.HandlerFunc {
+	return func(writer http.ResponseWriter, request *http.Request) {
+		token := &entity.Token{
+			AccessToken:  request.Header.Get("access-token"),
+			RefreshToken: request.Header.Get("refresh-token"),
+		}
+
+		user, err := ah.useCase.Login(token)
+
+		if err != nil {
+			ah.response.SetWriter(writer).SetData(err).Error()
+			return
+		}
+
+		ah.response.SetWriter(writer).SetData(user).Success()
+	}
+}
+
+func (ah *AuthHandler) Logout() http.HandlerFunc {
+	return func(writer http.ResponseWriter, request *http.Request) {
+		token := &entity.Token{
+			AccessToken:  request.Header.Get("access-token"),
+			RefreshToken: request.Header.Get("refresh-token"),
+		}
+
+		err := ah.useCase.Logout(token)
+
+		if err != nil {
+			ah.response.SetWriter(writer).SetData(err).Error()
+			return
+		}
+
+		ah.response.SetWriter(writer).SetData(struct{}{}).Success()
+	}
+}
+
+func (ah *AuthHandler) SendTwoAuth() http.HandlerFunc {
+	return func(writer http.ResponseWriter, request *http.Request) {
+		data := &auth.TwoAuthCodeRequest{}
+		err := json.NewDecoder(request.Body).Decode(&data)
+
+		if err != nil {
+			return
+		}
+
+		twoAuth, twoAuthError := ah.useCase.SendTwoAuth(data)
+
+		if twoAuthError != nil {
+			ah.response.SetWriter(writer).SetData(twoAuthError).Error()
+			return
+		}
+
+		ah.response.SetWriter(writer).SetData(twoAuth).Success()
+	}
+}

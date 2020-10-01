@@ -1,12 +1,15 @@
 package server
 
 import (
+	"context"
+	"github.com/go-redis/redis/v8"
 	"github.com/gorilla/handlers"
 	"github.com/gorilla/mux"
 	authhttp "github.com/trello-analog/backend/auth/delivery/http"
 	postgres2 "github.com/trello-analog/backend/auth/repository/postgres"
 	"github.com/trello-analog/backend/auth/usecase"
 	"github.com/trello-analog/backend/config"
+	"github.com/trello-analog/backend/entity"
 	"github.com/trello-analog/backend/services"
 	"gorm.io/driver/postgres"
 	"gorm.io/gorm"
@@ -52,8 +55,9 @@ func (app *App) Run() error {
 	return err
 }
 
-func initDB() *gorm.DB {
+func initDB() *entity.Database {
 	cfg := config.GetConfig()
+	context := context.Background()
 	dsn := "postgresql://" +
 		cfg.Database.User +
 		":" +
@@ -69,13 +73,30 @@ func initDB() *gorm.DB {
 		Logger: services.NewLogger(),
 	})
 
+	redisClient := redis.NewClient(&redis.Options{
+		Addr:     "localhost:6379",
+		Password: cfg.RedisPassword,
+		DB:       0,
+	})
+
+	_, redisErr := redisClient.Ping(context).Result()
+
+	if redisErr != nil {
+		log.Fatal(redisErr.Error())
+	} else {
+		log.Println("Redis connected successfully!")
+	}
+
 	if err != nil {
 		log.Fatal("Database connection was failed!")
 	} else {
 		log.Println("Database connected successfully!")
 	}
 
-	return db
+	return &entity.Database{
+		Postgres: db,
+		Redis:    redisClient,
+	}
 }
 
 func initRouter() *mux.Router {

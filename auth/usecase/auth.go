@@ -6,6 +6,7 @@ import (
 	"github.com/trello-analog/backend/customerrors"
 	"github.com/trello-analog/backend/emails"
 	"github.com/trello-analog/backend/entity"
+	"github.com/trello-analog/backend/helper"
 	model "github.com/trello-analog/backend/models"
 	"github.com/trello-analog/backend/services"
 	"net/http"
@@ -270,7 +271,7 @@ func (auc *AuthUseCase) RestorePassword(data *auth.RestorePasswordRequest) (*aut
 }
 
 func (auc *AuthUseCase) SignIn(data *auth.SignInRequest) (*auth.SignInResponseToken, *auth.SignInResponseTwoAuth, *customerrors.APIError) {
-	user, err := auc.repository.GetUserByQuery("login = '"+data.Name+"' OR email = '"+data.Name+"'", nil)
+	user, err := auc.repository.GetUserByQuery("email = ? OR login = ?", data.Name, data.Name)
 
 	if err != nil {
 		return nil, nil, err
@@ -290,10 +291,9 @@ func (auc *AuthUseCase) SignIn(data *auth.SignInRequest) (*auth.SignInResponseTo
 		return nil, nil, customerrors.UserNotConfirmed
 	}
 
-	//if user.IsTwoAuth() {
-	//	twoAuthCode := model.NewConfirmationCode(user.ID)
-	//
-	//}
+	if user.IsTwoAuth() {
+		return auc.handleTwoAuthCode(user)
+	}
 
 	token := services.NewToken(&services.TokenData{
 		UserId:   user.ID,
@@ -303,4 +303,120 @@ func (auc *AuthUseCase) SignIn(data *auth.SignInRequest) (*auth.SignInResponseTo
 	return &auth.SignInResponseToken{
 		Token: token.GetToken(),
 	}, nil, nil
+}
+
+func (auc *AuthUseCase) ResendTwoAuthCode(userId int) (*auth.SignInResponseToken, *auth.SignInResponseTwoAuth, *customerrors.APIError) {
+	user, userErr := auc.repository.GetUserById(userId)
+
+	if userErr != nil {
+		return nil, nil, userErr
+	}
+	return auc.handleTwoAuthCode(user)
+}
+
+func (auc *AuthUseCase) handleTwoAuthCode(user *model.User) (*auth.SignInResponseToken, *auth.SignInResponseTwoAuth, *customerrors.APIError) {
+	code, codeErr := auc.repository.GetTwoAuthCode(helper.IntToString(user.ID))
+	if codeErr != nil && codeErr != customerrors.CodeNotFound {
+		return nil, nil, codeErr
+	}
+	if code != "" {
+		exp, expErr := auc.repository.GetExpirationTwoAuthCodeByKey(helper.IntToString(user.ID))
+		if expErr != nil {
+			return nil, nil, expErr
+		}
+
+		return nil, &auth.SignInResponseTwoAuth{
+			UserId:  user.ID,
+			Expired: exp,
+		}, nil
+	}
+	twoAuthCode := helper.GenerateTwoAuthCode()
+	auc.repository.CreateTwoAuthCode(twoAuthCode, user.ID)
+	sendErr := auc.sender.SendTwoAuthCode(&emails.TwoAuthEmail{
+		Name:  user.Login,
+		Code:  twoAuthCode,
+		Email: user.Email,
+	})
+
+	if sendErr != nil {
+		return nil, nil, customerrors.PostServerError
+	}
+
+	return nil, &auth.SignInResponseTwoAuth{
+		UserId:  user.ID,
+		Expired: 180,
+	}, nil
+}
+
+func (auc *AuthUseCase) SendTwoAuth(data *auth.TwoAuthCodeRequest) (*auth.SignInResponseToken, *customerrors.APIError) {
+	user, userErr := auc.repository.GetUserById(data.UserId)
+
+	if userErr != nil {
+		return nil, customerrors.UserNotFound
+	}
+
+	code, err := auc.repository.GetTwoAuthCode(helper.IntToString(data.UserId))
+
+	if err != nil {
+		return nil, err
+	}
+
+	if data.Code != code {
+		return nil, customerrors.WrongTwoAuthCode
+	}
+
+	deleteCodeError := auc.repository.DeleteTwoAuthCode(helper.IntToString(data.UserId))
+
+	if deleteCodeError != nil {
+		return nil, deleteCodeError
+	}
+
+	token := services.NewToken(&services.TokenData{
+		UserId:   user.ID,
+		TempCode: user.TokenCode,
+	})
+
+	return &auth.SignInResponseToken{
+		Token: token.GetToken(),
+	}, nil
+}
+
+func (auc *AuthUseCase) Login(token *entity.Token) (*model.UserForFrontend, *customerrors.APIError) {
+	t := &services.TokenService{}
+	accessToken, err := t.ParseToken(token.AccessToken, "access")
+
+	if err != nil {
+		return nil, err
+	}
+
+	user, userErr := auc.repository.GetUserById(accessToken.UserId)
+
+	if userErr != nil {
+		return nil, userErr
+	}
+
+	return user.ToClientStruct(), nil
+}
+
+func (auc *AuthUseCase) Logout(token *entity.Token) *customerrors.APIError {
+	t := &services.TokenService{}
+	accessToken, err := t.ParseToken(token.AccessToken, "access")
+
+	if err != nil {
+		return err
+	}
+
+	user, userErr := auc.repository.GetUserById(accessToken.UserId)
+
+	if userErr != nil {
+		return userErr
+	}
+	user.CreateTokenCode()
+	updateErr := auc.repository.UpdateUser(user)
+
+	if updateErr != nil {
+		return updateErr
+	}
+
+	return nil
 }

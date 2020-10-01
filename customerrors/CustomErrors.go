@@ -35,4 +35,8 @@ var (
 	WrongCredential               = NewAPIError(http.StatusBadRequest, 14, "Неверные данные для входа!")
 	UserNotFound                  = NewAPIError(http.StatusNotFound, 15, "Юзер не найден!")
 	UserNotConfirmed              = NewAPIError(http.StatusNotFound, 16, "Юзер не подтвержден!")
+	CodeNotFound                  = NewAPIError(http.StatusNotFound, 17, "Код не найден!")
+	TwoAuthCodeAlreadyExists      = NewAPIError(http.StatusNotFound, 18, "Код уже существует!")
+	WrongTwoAuthCode              = NewAPIError(http.StatusNotFound, 19, "Неверный код!")
+	TokenExpired                  = NewAPIError(http.StatusNotFound, 20, "Время жизни истекло!")
 )

@@ -4,6 +4,7 @@ import (
 	"errors"
 	"github.com/dgrijalva/jwt-go/v4"
 	"github.com/trello-analog/backend/config"
+	"github.com/trello-analog/backend/customerrors"
 	"github.com/trello-analog/backend/entity"
 	"time"
 )
@@ -38,7 +39,8 @@ func GenerateToken(data *TokenData) (*entity.Token, error) {
 	accessToken := jwt.NewWithClaims(jwt.SigningMethodHS256, TokenClaims{
 		Data: data,
 		StandardClaims: jwt.StandardClaims{
-			ExpiresAt: jwt.At(time.Now().Add(time.Minute * 30)),
+			// TODO: заменть на 30 минут
+			ExpiresAt: jwt.At(time.Now().Add(time.Minute * 3000)),
 		},
 	})
 	refreshToken := jwt.NewWithClaims(jwt.SigningMethodHS256, TokenClaims{
@@ -69,21 +71,31 @@ func (t *TokenService) GetToken() *entity.Token {
 	return t.Token
 }
 
-func (t *TokenService) ParseToken(tokenString, mode string) (*TokenData, error) {
+func (t *TokenService) ParseToken(tokenString, mode string) (*TokenData, *customerrors.APIError) {
 	claims := &TokenClaims{}
 	if mode == "access" {
 		_, err := jwt.ParseWithClaims(tokenString, claims, func(token *jwt.Token) (interface{}, error) {
 			return []byte(config.GetConfig().AccessTokenSecret), nil
 		})
+
+		if claims.ExpiresAt.Unix() < time.Now().Unix() {
+			return nil, customerrors.TokenExpired
+		}
+
 		if err != nil {
-			return nil, err
+			return nil, customerrors.NewAPIError(401, 10, err.Error())
 		}
 	} else {
 		_, err := jwt.ParseWithClaims(tokenString, claims, func(token *jwt.Token) (interface{}, error) {
 			return []byte(config.GetConfig().RefreshTokenSecret), nil
 		})
+
+		if claims.ExpiresAt.Unix() < time.Now().Unix() {
+			return nil, customerrors.TokenExpired
+		}
+
 		if err != nil {
-			return nil, err
+			return nil, customerrors.NewAPIError(401, 10, err.Error())
 		}
 	}
 	return claims.Data, nil

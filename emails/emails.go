@@ -1,6 +1,9 @@
 package emails
 
-import "github.com/trello-analog/backend/services"
+import (
+	"fmt"
+	"github.com/trello-analog/backend/services"
+)
 
 type EmailSender struct {
 	EmailService *services.EmailService
@@ -30,7 +33,7 @@ func (es *EmailSender) SendEmailAfterSignUp(data *SignUpEmail) error {
 	if sendEmail != nil {
 		return sendEmail
 	}
-
+	fmt.Println("Letter has been sent!")
 	return nil
 }
 
@@ -45,6 +48,25 @@ func (es *EmailSender) SendForgotPasswordEmail(data *SignUpEmail) error {
 	sendEmail := es.EmailService.
 		SetEmail(data.Email).
 		SetSubject(subjectText).
+		SendEmail()
+
+	if sendEmail != nil {
+		return sendEmail
+	}
+
+	return nil
+}
+
+func (es *EmailSender) SendTwoAuthCode(data *TwoAuthEmail) error {
+	parseError := es.EmailService.ParseTemplate("emails/templates/TwoAuthCode.html", data)
+
+	if parseError != nil {
+		return parseError
+	}
+
+	sendEmail := es.EmailService.
+		SetEmail(data.Email).
+		SetSubject("Двухфакторная аутентификация").
 		SendEmail()
 
 	if sendEmail != nil {

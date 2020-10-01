@@ -14,4 +14,8 @@ type UseCase interface {
 	CheckForgotPassword(code string) (*ConfirmUserResponse, *customerrors.APIError)
 	RestorePassword(data *RestorePasswordRequest) (*ConfirmUserResponse, *customerrors.APIError)
 	SignIn(data *SignInRequest) (*SignInResponseToken, *SignInResponseTwoAuth, *customerrors.APIError)
+	ResendTwoAuthCode(userId int) (*SignInResponseToken, *SignInResponseTwoAuth, *customerrors.APIError)
+	SendTwoAuth(data *TwoAuthCodeRequest) (*SignInResponseToken, *customerrors.APIError)
+	Login(token *entity.Token) (*model.UserForFrontend, *customerrors.APIError)
+	Logout(token *entity.Token) *customerrors.APIError
 }
