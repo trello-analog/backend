@@ -243,3 +243,21 @@ func (ah *AuthHandler) SendTwoAuth() http.HandlerFunc {
 		ah.response.SetWriter(writer).SetData(twoAuth).Success()
 	}
 }
+
+func (ah *AuthHandler) RefreshToken() http.HandlerFunc {
+	return func(writer http.ResponseWriter, request *http.Request) {
+		token := &entity.Token{
+			AccessToken:  request.Header.Get("access-token"),
+			RefreshToken: request.Header.Get("refresh-token"),
+		}
+
+		tokenResp, err := ah.useCase.RefreshToken(token)
+
+		if err != nil {
+			ah.response.SetWriter(writer).SetData(err).Error()
+			return
+		}
+
+		ah.response.SetWriter(writer).SetData(tokenResp).Success()
+	}
+}

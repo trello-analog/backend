@@ -18,4 +18,5 @@ type UseCase interface {
 	SendTwoAuth(data *TwoAuthCodeRequest) (*SignInResponseToken, *customerrors.APIError)
 	Login(token *entity.Token) (*model.UserForFrontend, *customerrors.APIError)
 	Logout(token *entity.Token) *customerrors.APIError
+	RefreshToken(token *entity.Token) (*SignInResponseToken, *customerrors.APIError)
 }

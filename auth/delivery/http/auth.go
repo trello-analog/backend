@@ -20,4 +20,5 @@ func AuthEndpoints(router *mux.Router, useCase auth.UseCase) {
 	router.HandleFunc("/two-auth", handler.SendTwoAuth()).Methods(http.MethodPost)
 	router.HandleFunc("/login", handler.Login()).Methods(http.MethodPost)
 	router.HandleFunc("/logout", handler.Logout()).Methods(http.MethodPost)
+	router.HandleFunc("/refresh-token", handler.RefreshToken()).Methods(http.MethodPost)
 }

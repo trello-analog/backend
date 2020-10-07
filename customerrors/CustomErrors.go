@@ -38,5 +38,5 @@ var (
 	CodeNotFound                  = NewAPIError(http.StatusNotFound, 17, "Код не найден!")
 	TwoAuthCodeAlreadyExists      = NewAPIError(http.StatusNotFound, 18, "Код уже существует!")
 	WrongTwoAuthCode              = NewAPIError(http.StatusNotFound, 19, "Неверный код!")
-	TokenExpired                  = NewAPIError(http.StatusNotFound, 20, "Время жизни истекло!")
+	TokenExpired                  = NewAPIError(http.StatusUnauthorized, 20, "Время жизни токена истекло!")
 )

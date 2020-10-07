@@ -23,7 +23,7 @@ type TokenService struct {
 	Token *entity.Token
 }
 
-func NewToken(data *TokenData) *TokenService {
+func NewTokenService(data *TokenData) *TokenService {
 	token, err := GenerateToken(data)
 
 	if err != nil {
@@ -40,7 +40,7 @@ func GenerateToken(data *TokenData) (*entity.Token, error) {
 		Data: data,
 		StandardClaims: jwt.StandardClaims{
 			// TODO: заменть на 30 минут
-			ExpiresAt: jwt.At(time.Now().Add(time.Minute * 3000)),
+			ExpiresAt: jwt.At(time.Now().Add(time.Minute * 30)),
 		},
 	})
 	refreshToken := jwt.NewWithClaims(jwt.SigningMethodHS256, TokenClaims{
@@ -71,16 +71,12 @@ func (t *TokenService) GetToken() *entity.Token {
 	return t.Token
 }
 
-func (t *TokenService) ParseToken(tokenString, mode string) (*TokenData, *customerrors.APIError) {
+func ParseToken(tokenString, mode string) (*TokenClaims, *customerrors.APIError) {
 	claims := &TokenClaims{}
 	if mode == "access" {
 		_, err := jwt.ParseWithClaims(tokenString, claims, func(token *jwt.Token) (interface{}, error) {
 			return []byte(config.GetConfig().AccessTokenSecret), nil
 		})
-
-		if claims.ExpiresAt.Unix() < time.Now().Unix() {
-			return nil, customerrors.TokenExpired
-		}
 
 		if err != nil {
 			return nil, customerrors.NewAPIError(401, 10, err.Error())
@@ -90,13 +86,13 @@ func (t *TokenService) ParseToken(tokenString, mode string) (*TokenData, *custom
 			return []byte(config.GetConfig().RefreshTokenSecret), nil
 		})
 
-		if claims.ExpiresAt.Unix() < time.Now().Unix() {
-			return nil, customerrors.TokenExpired
-		}
-
 		if err != nil {
 			return nil, customerrors.NewAPIError(401, 10, err.Error())
 		}
 	}
-	return claims.Data, nil
+	return claims, nil
+}
+
+func (t *TokenService) IsTokenExpired(claims *TokenClaims) bool {
+	return claims.ExpiresAt.Unix() < time.Now().Unix()
 }

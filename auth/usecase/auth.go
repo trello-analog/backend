@@ -295,7 +295,7 @@ func (auc *AuthUseCase) SignIn(data *auth.SignInRequest) (*auth.SignInResponseTo
 		return auc.handleTwoAuthCode(user)
 	}
 
-	token := services.NewToken(&services.TokenData{
+	token := services.NewTokenService(&services.TokenData{
 		UserId:   user.ID,
 		TempCode: user.TokenCode,
 	})
@@ -371,7 +371,7 @@ func (auc *AuthUseCase) SendTwoAuth(data *auth.TwoAuthCodeRequest) (*auth.SignIn
 		return nil, deleteCodeError
 	}
 
-	token := services.NewToken(&services.TokenData{
+	token := services.NewTokenService(&services.TokenData{
 		UserId:   user.ID,
 		TempCode: user.TokenCode,
 	})
@@ -382,14 +382,13 @@ func (auc *AuthUseCase) SendTwoAuth(data *auth.TwoAuthCodeRequest) (*auth.SignIn
 }
 
 func (auc *AuthUseCase) Login(token *entity.Token) (*model.UserForFrontend, *customerrors.APIError) {
-	t := &services.TokenService{}
-	accessToken, err := t.ParseToken(token.AccessToken, "access")
+	tokenClaims, err := services.ParseToken(token.AccessToken, "access")
 
 	if err != nil {
 		return nil, err
 	}
 
-	user, userErr := auc.repository.GetUserById(accessToken.UserId)
+	user, userErr := auc.repository.GetUserById(tokenClaims.Data.UserId)
 
 	if userErr != nil {
 		return nil, userErr
@@ -399,14 +398,13 @@ func (auc *AuthUseCase) Login(token *entity.Token) (*model.UserForFrontend, *cus
 }
 
 func (auc *AuthUseCase) Logout(token *entity.Token) *customerrors.APIError {
-	t := &services.TokenService{}
-	accessToken, err := t.ParseToken(token.AccessToken, "access")
+	tokenClaims, err := services.ParseToken(token.AccessToken, "access")
 
 	if err != nil {
 		return err
 	}
 
-	user, userErr := auc.repository.GetUserById(accessToken.UserId)
+	user, userErr := auc.repository.GetUserById(tokenClaims.Data.UserId)
 
 	if userErr != nil {
 		return userErr
@@ -419,4 +417,26 @@ func (auc *AuthUseCase) Logout(token *entity.Token) *customerrors.APIError {
 	}
 
 	return nil
+}
+
+func (auc *AuthUseCase) RefreshToken(token *entity.Token) (*auth.SignInResponseToken, *customerrors.APIError) {
+	tokenClaims, err := services.ParseToken(token.RefreshToken, "refresh")
+	if err != nil {
+		return nil, err
+	}
+
+	user, userErr := auc.repository.GetUserById(tokenClaims.Data.UserId)
+
+	if userErr != nil {
+		return nil, userErr
+	}
+
+	t := services.NewTokenService(&services.TokenData{
+		UserId:   user.ID,
+		TempCode: user.TokenCode,
+	})
+
+	return &auth.SignInResponseToken{
+		Token: t.GetToken(),
+	}, nil
 }

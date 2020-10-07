@@ -57,7 +57,7 @@ func (app *App) Run() error {
 
 func initDB() *entity.Database {
 	cfg := config.GetConfig()
-	context := context.Background()
+	ctx := context.Background()
 	dsn := "postgresql://" +
 		cfg.Database.User +
 		":" +
@@ -79,7 +79,7 @@ func initDB() *entity.Database {
 		DB:       0,
 	})
 
-	_, redisErr := redisClient.Ping(context).Result()
+	_, redisErr := redisClient.Ping(ctx).Result()
 
 	if redisErr != nil {
 		log.Fatal(redisErr.Error())
